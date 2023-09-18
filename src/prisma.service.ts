@@ -2,6 +2,8 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { MAX_FREE_COUNTS } from '../constants';
 
+const DAY_IN_MS = 86_400_00;
+
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
   async onModuleInit() {
@@ -35,5 +37,30 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
         data: { userId, count: 1 }
       });
     }
+  }
+
+  async checkSubscription(userId: string) {
+    const userSubscription = await this.userSubscription.findUnique({
+      where: {
+        userId
+      },
+      select: {
+        stripeSubscriptionId: true,
+        stripeCurrentPeriodEnd: true,
+        stripeCustomerId: true,
+        stripePriceId: true,
+      }
+    });
+    
+    if(!userSubscription) {
+      return false;
+    }
+
+    const isValid = 
+      userSubscription.stripePriceId &&
+      userSubscription.stripeCurrentPeriodEnd?.getTime()! + DAY_IN_MS > Date.now()
+
+    return !!isValid;
+    
   }
 }

@@ -18,7 +18,7 @@ export class StripeController {
     ) { }
 
     @Get('stripe')
-    async getUrlStripe(@Query('userId') userId: string, @Query('email') email: string, @Res() response: Response): Promise<IOutputLink> {
+    async getUrlStripe(@Query('userId') userId: string, @Query('email') email: string, @Res() response: Response): Promise<Response> {
         return this.stripeService.paymentUrl(response, { userId, email });
     }
 }

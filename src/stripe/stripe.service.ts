@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { absoluteUrl } from 'src/utils/absoluteURL';
 import { Response } from 'express';
-import { IOutputLink } from './stripe.controller';
 import Stripe from 'stripe';
 
 interface IPars {
@@ -23,7 +22,7 @@ export class StripeService {
         });
     }
 
-    async paymentUrl(reply: Response, pars: IPars): Promise<IOutputLink> {
+    async paymentUrl(reply: Response, pars: IPars): Promise<Response> {
         const { userId, email } = pars;
 
         try {
@@ -74,9 +73,9 @@ export class StripeService {
                 },
             })
 
-            return {
+            return reply.status(200).send({
                 url: stripeSession.url
-            }
+            });
         } catch (error) {
             console.log(error);
             reply.status(500).send({ error: "Internal error" });

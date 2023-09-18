@@ -24,14 +24,14 @@ export class WebhookService {
     }
 
     async webhookStripe(request: Request, reply: Response): Promise<void> {
-        const body = await request.text();
+        const body =  request.body;
         const signature = request.headers['stripe-signature'];
 
         let event: Stripe.Event;
         
         try {
             event = this.stripe.webhooks.constructEvent(
-                body,
+                body as any,
                 signature,
                 process.env.STRIPE_WEBHOOK_SECRET!
               )

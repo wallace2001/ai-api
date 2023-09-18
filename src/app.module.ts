@@ -1,13 +1,15 @@
-import { MiddlewareConsumer, Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { StripeModule } from './stripe/stripe.module';
 import { WebhookModule } from './webhook/webhook.module';
 import { ChatModule } from './chat/chat.module';
 import { LimitModule } from './limit/limit.module';
-import { LimitMiddleware } from './middlewares/limit.middleware';
 import { ImageModule } from './image/image.module';
 import { VideoModule } from './video/video.module';
 import { AudioModule } from './audio/audio.module';
+import { SubscriptionModule } from './subscription/subscription.module';
+import { RawBodyMiddleware } from './middlewares/raw-body.middleware';
+import { JsonBodyMiddleware } from './middlewares/json-body.middleware';
 
 @Module({
   imports: [
@@ -19,6 +21,7 @@ import { AudioModule } from './audio/audio.module';
     ImageModule,
     VideoModule,
     AudioModule,
+    SubscriptionModule,
     StripeModule,
     WebhookModule,
   ],
@@ -26,7 +29,12 @@ import { AudioModule } from './audio/audio.module';
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
-      .apply(LimitMiddleware)
-      .forRoutes('ai/chat');
+      .apply(RawBodyMiddleware)
+      .forRoutes({
+        path: '/webhook',
+        method: RequestMethod.POST,
+      })
+      .apply(JsonBodyMiddleware)
+      .forRoutes('*');
   }
 }
