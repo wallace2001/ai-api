@@ -46,12 +46,15 @@ export class ImageService {
             }
 
             const freeTrial = await this.prisma.checkLimit(userId);
+            const isPro = await this.prisma.checkSubscription(userId);
 
-            if (!freeTrial) {
+            if (!freeTrial && !isPro) {
                 return reply.status(403).send({error: 'Free trial expired.'});
             }
-    
-            await this.prisma.increaseLimit(userId);
+            
+            if (!isPro) {
+                await this.prisma.increaseLimit(userId);
+            }
 
             const response = await this.openai.images.generate({
                 prompt,

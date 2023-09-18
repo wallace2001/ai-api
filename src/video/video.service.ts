@@ -31,9 +31,14 @@ export class VideoService {
             }
 
             const freeTrial = await this.prisma.checkLimit(userId);
+            const isPro = await this.prisma.checkSubscription(userId);
 
-            if (!freeTrial) {
+            if (!freeTrial && !isPro) {
                 return reply.status(403).send({error: 'Free trial expired.'});
+            }
+            
+            if (!isPro) {
+                await this.prisma.increaseLimit(userId);
             }
     
             await this.prisma.increaseLimit(userId);

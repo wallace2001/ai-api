@@ -13,7 +13,7 @@ export class LimitService {
     async getCountLimitUsageAI(reply: Response, userId: string): Promise<Response> {
         try {
             if (!userId) {
-                return reply.status(200).send({ count: 0 });
+                return reply.status(200).send({ count: 0, permission: false });
             }
         
             const userLimit = await this.prisma.userApiLimit.findUnique({
@@ -22,10 +22,12 @@ export class LimitService {
                 }
             });
             if (!userLimit) {
-                return reply.status(200).send({ count: 0 });
+                return reply.status(200).send({ count: 0, permission: false });
             }
 
-            return reply.status(200).send({ count: userLimit.count })
+            const permission = await this.prisma.checkSubscription(userId);
+
+            return reply.status(200).send({ count: userLimit.count, permission })
         } catch (error) {
             console.log(error);
             reply.status(500).send({ error: "Internal error" });
